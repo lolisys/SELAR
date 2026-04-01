@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prophet Intelligence - Emotion Analysis</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --accent-color: #00f2ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #illusion-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 20px var(--accent-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #illusion-container:active {
+            transform: scale(0.95);
+        }
+
+        /* The Optical Illusion Animation */
+        .swirl {
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg, #000, #222, #00f2ff, #000);
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #ui-overlay {
+            text-align: center;
+            z-index: 10;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 10px;
+            background: #333;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-color);
+            transition: width 0.1s;
+        }
+
+        #result-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #00f2ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-overlay">
+        <h1>PROPHET INTELLIGENCE</h1>
+        <p>Focus on the center and tap the illusion for 30 seconds</p>
+    </div>
+
+    <div id="illusion-container" onclick="handleClick()">
+        <div class="swirl"></div>
+    </div>
+
+    <div class="progress-bar">
+        <div id="progress-fill"></div>
+    </div>
+
+    <div id="result-display">Waiting for interaction...</div>
+
+    <script>
+        let clickTimes = [];
+        let startTime = null;
+        let isAnalyzing = false;
+        const duration = 30000; // 30 seconds
+
+        function handleClick() {
+            const now = Date.now();
+
+            if (!isAnalyzing) {
+                startSession(now);
+            }
+
+            clickTimes.push(now);
+        }
+
+        function startSession(time) {
+            isAnalyzing = true;
+            startTime = time;
+            clickTimes = [time];
+            document.getElementById('result-display').innerText = "Analyzing Biometrics...";
+            
+            const timer = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = (elapsed / duration) * 100;
+                document.getElementById('progress-fill').style.width = progress + "%";
+
+                if (elapsed >= duration) {
+                    clearInterval(timer);
+                    finalizeAnalysis();
+                }
+            }, 100);
+        }
+
+        function finalizeAnalysis() {
+            isAnalyzing = false;
+            const totalClicks = clickTimes.length;
+            
+            // Calculate Intervals
+            let intervals = [];
+            for (let i = 1; i < clickTimes.length; i++) {
+                intervals.push(clickTimes[i] - clickTimes[i-1]);
+            }
+
+            // Simple Logic for Estimation
+            const avgInterval = duration / totalClicks;
+            
+            let status = "";
+            let color = "#00f2ff";
+
+            if (totalClicks < 20) {
+                status = "STATE: DEEP REFLECTION / CALM";
+                color = "#00ff88";
+            } else if (totalClicks >= 20 && totalClicks < 60) {
+                status = "STATE: CONTENT / BALANCED HAPPINESS";
+                color = "#f2ff00";
+            } else if (totalClicks >= 60 && totalClicks < 100) {
+                status = "STATE: HIGH FOCUS / EXCITEMENT";
+                color = "#ff8800";
+            } else {
+                status = "STATE: HIGH STRESS / ANXIETY DETECTED";
+                color = "#ff0044";
+            }
+
+            const display = document.getElementById('result-display');
+            display.innerText = status;
+            display.style.color = color;
+            document.getElementById('progress-fill').style.backgroundColor = color;
+        }
+    </script>
+</body>
+</html>
