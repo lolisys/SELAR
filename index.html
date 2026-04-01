@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prophet Intelligence - Emotion Analysis</title>
+    <title>Prophet AI | Financial State Predictor</title>
     <style>
         :root {
-            --bg-color: #0a0a0c;
-            --accent-color: #00f2ff;
+            --glass: rgba(255, 255, 255, 0.1);
+            --gold: #d4af37;
+            --success: #00ffcc;
+            --fail: #ff4d4d;
+            --bg: #05070a;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: #e0e0e0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
@@ -23,150 +25,181 @@
             overflow: hidden;
         }
 
-        #illusion-container {
+        .app-container {
+            width: 90%;
+            max-width: 400px;
+            background: linear-gradient(145deg, #0f1218, #161b22);
+            padding: 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: var(--gold);
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+        }
+
+        /* The Illusion Scanner */
+        .scanner-vault {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 220px;
+            height: 220px;
+            margin: 25px auto;
             border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid var(--accent-color);
-            box-shadow: 0 0 20px var(--accent-color);
+            padding: 10px;
+            background: var(--glass);
+            border: 1px solid rgba(212, 175, 55, 0.3);
             cursor: pointer;
-            transition: transform 0.2s;
         }
 
-        #illusion-container:active {
-            transform: scale(0.95);
-        }
-
-        /* The Optical Illusion Animation */
-        .swirl {
+        .illusion-ring {
             width: 100%;
             height: 100%;
-            background: conic-gradient(from 0deg, #000, #222, #00f2ff, #000);
-            animation: rotate 2s linear infinite;
+            border-radius: 50%;
+            background: repeating-conic-gradient(from 0deg, #05070a 0deg 15deg, var(--gold) 15deg 30deg);
+            animation: spin 3s linear infinite;
+            opacity: 0.8;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
+        @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        #ui-overlay {
-            text-align: center;
-            z-index: 10;
+        .scanner-active .illusion-ring {
+            animation-duration: 0.5s;
+            filter: hue-rotate(90deg);
+        }
+
+        .status-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
             margin-top: 20px;
+            border-left: 4px solid var(--gold);
         }
 
-        .progress-bar {
-            width: 300px;
-            height: 10px;
-            background: #333;
-            margin-top: 10px;
-            border-radius: 5px;
+        #prediction-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #aaa;
         }
 
-        #progress-fill {
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #bar {
             width: 0%;
             height: 100%;
-            background: var(--accent-color);
-            transition: width 0.1s;
+            background: var(--gold);
+            transition: width 0.1s linear;
         }
 
-        #result-display {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-top: 20px;
-            color: #00f2ff;
+        .instruction {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-    <div id="ui-overlay">
-        <h1>PROPHET INTELLIGENCE</h1>
-        <p>Focus on the center and tap the illusion for 30 seconds</p>
+<div class="app-container">
+    <div class="header">
+        <h1>Prophet Intelligence</h1>
+        <div id="sub-tag">Biometric Wealth Analysis</div>
     </div>
 
-    <div id="illusion-container" onclick="handleClick()">
-        <div class="swirl"></div>
+    <div class="scanner-vault" id="scanner" onmousedown="startAnalysis()" onmouseup="stopVisual()">
+        <div class="illusion-ring"></div>
     </div>
 
-    <div class="progress-bar">
-        <div id="progress-fill"></div>
+    <div class="status-box">
+        <div id="prediction-text">SYSTEM READY: TAP & HOLD SCANNER</div>
     </div>
 
-    <div id="result-display">Waiting for interaction...</div>
+    <div class="progress-container">
+        <div id="bar"></div>
+    </div>
 
-    <script>
-        let clickTimes = [];
-        let startTime = null;
-        let isAnalyzing = false;
-        const duration = 30000; // 30 seconds
+    <p class="instruction">Scan requires 30 seconds of rhythmic interaction to calibrate neuro-financial response.</p>
+</div>
 
-        function handleClick() {
+<script>
+    let clicks = [];
+    let startTime = null;
+    let timer = null;
+    const duration = 30000; // 30 seconds
+
+    function startAnalysis() {
+        if (startTime) {
+            // Already running, just log the tap
+            clicks.push(Date.now());
+            return;
+        }
+
+        // Initialize session
+        startTime = Date.now();
+        clicks = [startTime];
+        document.getElementById('scanner').classList.add('scanner-active');
+        document.getElementById('prediction-text').innerText = "ANALYZING DOPAMINE LEVELS...";
+
+        timer = setInterval(() => {
             const now = Date.now();
+            const elapsed = now - startTime;
+            const percent = (elapsed / duration) * 100;
+            document.getElementById('bar').style.width = percent + "%";
 
-            if (!isAnalyzing) {
-                startSession(now);
+            if (elapsed >= duration) {
+                clearInterval(timer);
+                calculateProphecy();
             }
+        }, 100);
+    }
 
-            clickTimes.push(now);
+    function stopVisual() {
+        // Visual feedback only, logic continues until 30s
+        document.getElementById('scanner').classList.remove('scanner-active');
+    }
+
+    function calculateProphecy() {
+        const totalClicks = clicks.length;
+        const display = document.getElementById('prediction-text');
+        const bar = document.getElementById('bar');
+        
+        // Algorithm: Reward Instinct vs Anxiety Instinct
+        // Money seekers with 100% certainty usually hit 2-3 taps per second (60-90 total)
+        
+        let result = "";
+        let finalColor = "";
+
+        if (totalClicks > 70) {
+            result = "PROPHESY: REWARD SIGNAL DETECTED. MONEY IS COMING 100%.";
+            finalColor = "#00ffcc";
+        } else if (totalClicks >= 40 && totalClicks <= 70) {
+            result = "PROPHESY: TRANSITION STATE. PARTIAL FUNDS EXPECTED.";
+            finalColor = "#d4af37";
+        } else {
+            result = "PROPHESY: NO REWARD SIGNAL. FINANCIAL DELAY LIKELY.";
+            finalColor = "#ff4d4d";
         }
 
-        function startSession(time) {
-            isAnalyzing = true;
-            startTime = time;
-            clickTimes = [time];
-            document.getElementById('result-display').innerText = "Analyzing Biometrics...";
-            
-            const timer = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                const progress = (elapsed / duration) * 100;
-                document.getElementById('progress-fill').style.width = progress + "%";
+        display.innerText = result;
+        display.style.color = finalColor;
+        bar.style.backgroundColor = finalColor;
+        startTime = null; // Reset for next use
+    }
+</script>
 
-                if (elapsed >= duration) {
-                    clearInterval(timer);
-                    finalizeAnalysis();
-                }
-            }, 100);
-        }
-
-        function finalizeAnalysis() {
-            isAnalyzing = false;
-            const totalClicks = clickTimes.length;
-            
-            // Calculate Intervals
-            let intervals = [];
-            for (let i = 1; i < clickTimes.length; i++) {
-                intervals.push(clickTimes[i] - clickTimes[i-1]);
-            }
-
-            // Simple Logic for Estimation
-            const avgInterval = duration / totalClicks;
-            
-            let status = "";
-            let color = "#00f2ff";
-
-            if (totalClicks < 20) {
-                status = "STATE: DEEP REFLECTION / CALM";
-                color = "#00ff88";
-            } else if (totalClicks >= 20 && totalClicks < 60) {
-                status = "STATE: CONTENT / BALANCED HAPPINESS";
-                color = "#f2ff00";
-            } else if (totalClicks >= 60 && totalClicks < 100) {
-                status = "STATE: HIGH FOCUS / EXCITEMENT";
-                color = "#ff8800";
-            } else {
-                status = "STATE: HIGH STRESS / ANXIETY DETECTED";
-                color = "#ff0044";
-            }
-
-            const display = document.getElementById('result-display');
-            display.innerText = status;
-            display.style.color = color;
-            document.getElementById('progress-fill').style.backgroundColor = color;
-        }
-    </script>
 </body>
 </html>
